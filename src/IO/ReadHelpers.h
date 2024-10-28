@@ -1106,6 +1106,52 @@ inline ReturnType readDateTimeTextImpl(DateTime64 & datetime64, UInt32 scale, Re
         components.whole = components.whole / common::exp10_i32(scale);
     }
 
+    /// proton: starts
+    /// processing time zone
+    bool has_time_zone_offset = false;
+    Int8 time_zone_offset_hour = 0;
+    Int8 time_zone_offset_minute = 0;
+    UInt8 timezone_length = 6;
+
+    if (*buf.position() == '+' || *buf.position() == '-')
+    {
+        has_time_zone_offset = true;
+        char timezone_sign = *buf.position();
+        ++buf.position();
+
+        char tz[timezone_length];
+        auto size = buf.read(tz, timezone_length - 1);
+        tz[size] = 0;
+
+        if (size != timezone_length - 1 || tz[2] != ':')
+            throw ParsingException(std::string("Cannot parse Timezone ") + tz, ErrorCodes::CANNOT_PARSE_DATETIME);
+
+        time_zone_offset_hour = (tz[0] - '0') * 10 + (tz[1] - '0');
+        time_zone_offset_minute = (tz[3] - '0') * 10 + (tz[4] - '0');
+
+        if (timezone_sign == '-')
+        {
+            time_zone_offset_hour = -time_zone_offset_hour;
+            time_zone_offset_minute = -time_zone_offset_minute;
+        }
+    }
+    else if (*buf.position() == 'Z')
+    {
+        has_time_zone_offset = true;
+        ++buf.position();
+    }
+
+    if (has_time_zone_offset)
+    {   
+        components.whole -= date_lut.timezoneOffset(components.whole);
+        if (time_zone_offset_hour)
+            components.whole -= time_zone_offset_hour * 3600;
+
+        if (time_zone_offset_minute)
+            components.whole -= time_zone_offset_minute * 60;
+    }
+    /// proton: ends
+
     bool is_ok = true;
     if constexpr (std::is_same_v<ReturnType, void>)
     {
