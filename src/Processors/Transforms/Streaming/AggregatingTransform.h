@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Interpreters/Streaming/Aggregator.h>
 #include <Core/Streaming/SubstreamID.h>
 #include <DataTypes/DataTypeFactory.h>
+#include <Interpreters/Streaming/Aggregator.h>
 #include <Processors/IProcessor.h>
 #include <Common/Stopwatch.h>
 #include <Common/serde.h>
@@ -21,15 +21,23 @@ struct AggregatingTransformParams
     bool only_merge = false;
     bool emit_version;
     bool emit_changelog;
+    bool emit_repeat; /// Only work for global aggregation for now
     DataTypePtr version_type;
     Streaming::EmitMode emit_mode;
 
-    AggregatingTransformParams(const Aggregator::Params & params_, bool final_, bool emit_version_, bool emit_changelog_, Streaming::EmitMode watermark_emit_mode_)
+    AggregatingTransformParams(
+        const Aggregator::Params & params_,
+        bool final_,
+        bool emit_version_,
+        bool emit_changelog_,
+        bool emit_repeat_,
+        Streaming::EmitMode watermark_emit_mode_)
         : aggregator(params_)
         , params(aggregator.getParams())
         , final(final_)
         , emit_version(emit_version_)
         , emit_changelog(emit_changelog_)
+        , emit_repeat(emit_repeat_)
         , emit_mode(watermark_emit_mode_)
     {
         if (emit_version)
@@ -50,6 +58,8 @@ struct AggregatingTransformParams
 
         return res;
     }
+
+    bool repeatEmit() const noexcept { return emit_repeat && !emit_changelog && emit_mode < EmitMode::OnUpdate; }
 
     Block getHeader() const { return getHeader(params, final, emit_version, emit_changelog); }
 };
@@ -110,11 +120,17 @@ SERDE struct ManyAggregatedData
 
     void setField(AnyField && field_) { any_field = std::move(field_); }
 
-    template<typename T>
-    T & getField() { return std::any_cast<T &>(any_field.field); }
+    template <typename T>
+    T & getField()
+    {
+        return std::any_cast<T &>(any_field.field);
+    }
 
-    template<typename T>
-    const T & getField() const { return std::any_cast<const T &>(any_field.field); }
+    template <typename T>
+    const T & getField() const
+    {
+        return std::any_cast<const T &>(any_field.field);
+    }
 
     bool hasNewData() const
     {
@@ -128,10 +144,7 @@ SERDE struct ManyAggregatedData
             *rows = 0;
     }
 
-    void addRowCount(size_t rows, size_t current_variant)
-    {
-        *rows_since_last_finalizations[current_variant] += rows;
-    }
+    void addRowCount(size_t rows, size_t current_variant) { *rows_since_last_finalizations[current_variant] += rows; }
 };
 
 using ManyAggregatedDataPtr = std::shared_ptr<ManyAggregatedData>;
@@ -208,6 +221,7 @@ protected:
     virtual bool needFinalization(Int64 /*min_watermark*/) const { return true; }
 
     /// Prepare and check whether can finalization many_data (called after acquired finalizing lock)
+    /// \return true if finalization is good to proceed, otherwise false
     virtual bool prepareFinalization(Int64 /*min_watermark*/) { return true; }
 
     virtual void clearExpiredState(Int64 /*finalized_watermark*/) { }

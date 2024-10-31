@@ -3288,7 +3288,7 @@ void InterpreterSelectQuery::executeStreamingAggregation(
             query_plan.getCurrentDataStream(), std::move(params), final, emit_version, data_stream_semantic_pair.isChangelogOutput(), emit_mode));
     else
         query_plan.addStep(std::make_unique<Streaming::AggregatingStep>(
-            query_plan.getCurrentDataStream(), std::move(params), final, merge_threads, temporary_data_merge_threads, emit_version, data_stream_semantic_pair.isChangelogOutput(), emit_mode));
+            query_plan.getCurrentDataStream(), std::move(params), final, merge_threads, temporary_data_merge_threads, emit_version, data_stream_semantic_pair.isChangelogOutput(), emit_repeat, emit_mode));
 }
 
 /// Resolve input / output data stream semantic.
@@ -3512,6 +3512,7 @@ void InterpreterSelectQuery::buildWatermarkQueryPlan(QueryPlan & query_plan)
         query_info.query, query_info.syntax_analyzer_result, query_info.streaming_window_params);
 
     emit_mode = params->mode; /// saved it to be used for streaming aggregating step
+    emit_repeat = params->repeat;
 
     bool skip_stamping_for_backfill_data = !context->getSettingsRef().emit_during_backfill.value;
 

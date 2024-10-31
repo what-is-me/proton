@@ -27,14 +27,14 @@ GlobalAggregatingTransform::GlobalAggregatingTransform(
     size_t max_threads_,
     size_t temporary_data_merge_threads_)
     : AggregatingTransform(
-        std::move(header),
-        std::move(params_),
-        std::move(many_data_),
-        current_variant_,
-        max_threads_,
-        temporary_data_merge_threads_,
-        "GlobalAggregatingTransform",
-        ProcessorID::GlobalAggregatingTransformID)
+          std::move(header),
+          std::move(params_),
+          std::move(many_data_),
+          current_variant_,
+          max_threads_,
+          temporary_data_merge_threads_,
+          "GlobalAggregatingTransform",
+          ProcessorID::GlobalAggregatingTransformID)
 {
     assert(params->params.group_by == Aggregator::Params::GroupBy::OTHER);
 
@@ -81,7 +81,7 @@ bool GlobalAggregatingTransform::prepareFinalization(Int64 min_watermark)
         /// Reset all watermarks to INVALID,
         /// Next finalization will just be triggered when all transform watermarks are updated
         std::ranges::for_each(many_data->watermarks, [](auto & wm) { wm = INVALID_WATERMARK; });
-        return many_data->hasNewData(); /// If there is no new data, don't emit aggr result
+        return many_data->hasNewData() || params->repeatEmit(); /// If there is new data or repeat emit, don't emit aggr result
     }
     return false;
 }

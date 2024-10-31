@@ -1,14 +1,15 @@
 #pragma once
 
-#include <Parsers/IAST.h>
 #include <Core/Streaming/Watermark.h>
+#include <Parsers/IAST.h>
 
 namespace DB
 {
 struct ASTEmitQuery : public IAST
 {
 public:
-    enum StreamMode {
+    enum StreamMode
+    {
         STREAM,
         CHANGELOG
     };
@@ -31,6 +32,8 @@ public:
     /// [LAST <last-x> [ON PROCTIME]]]
     ASTPtr last_interval;
     bool proc_time = false; /// Proc time or event time processing.
+
+    bool repeat = false; /// If repeatedly emit last emitted results, no matter if there is new event or not
 
     String getID(char) const override { return "Emit"; }
 

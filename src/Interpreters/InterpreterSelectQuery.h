@@ -261,6 +261,7 @@ private:
     bool light_shuffled = false;
 
     Streaming::EmitMode emit_mode = Streaming::EmitMode::None;
+    bool emit_repeat = false;
 
     /// Overall data stream semantic defines the output semantic of the current layer of SELECT
     Streaming::DataStreamSemanticPair data_stream_semantic_pair;

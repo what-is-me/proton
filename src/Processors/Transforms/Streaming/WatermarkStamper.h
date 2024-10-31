@@ -33,6 +33,8 @@ public:
 
     /// With delay
     WindowInterval delay_interval;
+
+    bool repeat = false;
 };
 
 using WatermarkStamperParamsPtr = std::shared_ptr<const WatermarkStamperParams>;

@@ -1,5 +1,5 @@
-#include <Parsers/Streaming/ParserEmitQuery.h>
 #include <Parsers/Streaming/ASTEmitQuery.h>
+#include <Parsers/Streaming/ParserEmitQuery.h>
 
 #include <Parsers/CommonParsers.h>
 #include <Parsers/ExpressionListParsers.h>
@@ -30,6 +30,7 @@ bool ParserEmitQuery::parseImpl(Pos & pos, ASTPtr & node, Expected & expected, [
     /// 5) EMIT CHANGELOG
     /// 6) EMIT STREAM ON UPDATE
     /// 7) EMIT STREAM PERIODIC 3s ON UPDATE
+    /// 8) EMIT PERIODIC 1s REPEAT
     /// ...
     if (!parse_only_internals)
     {
@@ -66,12 +67,16 @@ bool ParserEmitQuery::parseImpl(Pos & pos, ASTPtr & node, Expected & expected, [
         }
     }
 
+    bool repeat = false;
     ASTPtr periodic_interval;
     if (ParserKeyword("PERIODIC").ignore(pos, expected))
     {
         /// [PERIODIC INTERVAL '3' SECONDS]
         if (!interval_alias_p.parse(pos, periodic_interval, expected))
             return false;
+
+        if (ParserKeyword("REPEAT").ignore(pos, expected))
+            repeat = true;
     }
 
     bool on_update = false;
@@ -96,6 +101,9 @@ bool ParserEmitQuery::parseImpl(Pos & pos, ASTPtr & node, Expected & expected, [
 
             if (!interval_alias_p.parse(pos, periodic_interval, expected))
                 return false;
+
+            if (ParserKeyword("REPEAT").ignore(pos, expected))
+                repeat = true;
         }
         else if (ParserKeyword("TIMEOUT").ignore(pos, expected))
         {
@@ -134,6 +142,7 @@ bool ParserEmitQuery::parseImpl(Pos & pos, ASTPtr & node, Expected & expected, [
     query->timeout_interval = timeout_interval;
     query->last_interval = last_interval;
     query->proc_time = proctime;
+    query->repeat = repeat;
 
     node = query;
 

@@ -24,6 +24,10 @@ void ASTEmitQuery::formatImpl(const FormatSettings & format, FormatState &, Form
     {
         format.ostr << (format.hilite ? hilite_keyword : "") << (elems ? " AND " : "") << "PERIODIC " << (format.hilite ? hilite_none : "");
         periodic_interval->format(format);
+
+        if (repeat)
+            format.ostr << (format.hilite ? hilite_keyword : "") << " REPEAT ";
+
         ++elems;
     }
 
@@ -49,7 +53,6 @@ void ASTEmitQuery::formatImpl(const FormatSettings & format, FormatState &, Form
         if (proc_time)
             format.ostr << (format.hilite ? hilite_keyword : "") << " ON PROCTIME" << (format.hilite ? hilite_none : "");
     }
-
 }
 
 void ASTEmitQuery::updateTreeHashImpl(SipHash & hash_state) const
@@ -62,6 +65,8 @@ void ASTEmitQuery::updateTreeHashImpl(SipHash & hash_state) const
 
     if (periodic_interval)
         periodic_interval->updateTreeHashImpl(hash_state);
+
+    hash_state.update(repeat);
 
     hash_state.update(on_update);
 

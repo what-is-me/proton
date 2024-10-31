@@ -70,13 +70,17 @@ void mergeEmitQuerySettings(const ASTPtr & emit_query, WatermarkStamperParams & 
             params.mode = EmitMode::OnUpdate;
     }
     else
+    {
         params.mode = EmitMode::None;
+    }
 
     if (emit->timeout_interval)
         params.timeout_interval = extractInterval(emit->timeout_interval->as<ASTFunction>());
 
     if (emit->delay_interval)
         params.delay_interval = extractInterval(emit->delay_interval->as<ASTFunction>());
+
+    params.repeat = emit->repeat;
 }
 }
 

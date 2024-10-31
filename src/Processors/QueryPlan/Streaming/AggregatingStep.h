@@ -25,6 +25,7 @@ public:
         size_t temporary_data_merge_threads_,
         bool emit_version_,
         bool emit_changelog_,
+        bool emit_repeat_,
         Streaming::EmitMode watermark_emit_mode_);
 
     String getName() const override { return "StreamingAggregating"; }
@@ -46,6 +47,7 @@ private:
 
     bool emit_version;
     bool emit_changelog;
+    bool emit_repeat;
     Streaming::EmitMode emit_mode;
 
     Processors aggregating;
