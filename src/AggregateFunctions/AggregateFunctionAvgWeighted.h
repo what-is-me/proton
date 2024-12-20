@@ -15,7 +15,7 @@ using AvgWeightedFieldType = std::conditional_t<is_decimal<T>,
         NearestFieldType<T>>>;
 
 template <typename T, typename U>
-using MaxFieldType = std::conditional_t<(sizeof(AvgWeightedFieldType<T>) > sizeof(AvgWeightedFieldType<U>)),
+using MaxFieldType = std::conditional_t<(sizeof(AvgWeightedFieldType<T>) >= sizeof(AvgWeightedFieldType<U>)),
     AvgWeightedFieldType<T>, AvgWeightedFieldType<U>>;
 
 template <typename Value, typename Weight>
@@ -30,7 +30,7 @@ public:
 
     using Numerator = typename Base::Numerator;
     using Denominator = typename Base::Denominator;
-     using Fraction = typename Base::Fraction;
+    using Fraction = typename Base::Fraction;
 
     void NO_SANITIZE_UNDEFINED add(AggregateDataPtr __restrict place, const IColumn ** columns, size_t row_num, Arena *) const override
     {

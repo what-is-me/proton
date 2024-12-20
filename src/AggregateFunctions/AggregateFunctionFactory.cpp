@@ -179,6 +179,17 @@ AggregateFunctionPtr AggregateFunctionFactory::getImpl(
             query_context->addQueryFactoriesInfo(Context::QueryLogFactories::AggregateFunctionCombinator, combinator_name);
 
         String nested_name = name.substr(0, name.size() - combinator_name.size());
+
+        if (combinator_name == "_time_weighted")
+        {
+            if (nested_name == "avg")
+                nested_name = "avg_weighted";
+            else if (nested_name == "median")
+                nested_name = "median_exact_weighted";           
+            else
+                throw Exception(ErrorCodes::ILLEGAL_AGGREGATION, "Unknown aggregate function '{}'", name);
+        }
+
         /// Nested identical combinators (i.e. uniqCombinedIfIf) is not
         /// supported (since they don't work -- silently).
         ///
