@@ -426,6 +426,24 @@ std::optional<UInt64> Kafka::totalRows(const Settings & settings_ref) const
     return rows;
 }
 
+std::vector<int64_t> Kafka::getLastSNs() const
+{
+    auto produce = const_cast<DB::Kafka*>(this)->getProducer();
+    RdKafka::Topic topic{*produce->getHandle(), topicName()};
+    auto partitions = topic.getPartitionCount();
+
+    std::vector<int64_t> result;
+    result.reserve(partitions);
+
+    for (int32_t i = 0; i < partitions; ++i)
+    {
+        auto offset = topic.queryWatermarks(i);
+        result.push_back(std::max(offset.high - 1, offset.low));
+    }
+
+    return result;
+}
+
 Pipe Kafka::read(
     const Names & column_names,
     const StorageSnapshotPtr & storage_snapshot,
