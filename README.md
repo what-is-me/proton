@@ -82,7 +82,7 @@ The [Docker Compose stack](https://github.com/timeplus-io/proton/tree/develop/ex
 
 ### Timeplus Cloud:
 
-Don't want to setup by yourself? Try Timeplus in [Cloud](https://us-west-2.timeplus.cloud/)
+Don't want to setup by yourself? Try Timeplus in [Cloud](https://demo.timeplus.cloud/)
 
 
 ### 🔎 Usage
@@ -119,13 +119,13 @@ You should see data like the following:
 ### ⏩ What's next?
 To see more examples of using Timeplus Proton, check out the [examples](https://github.com/timeplus-io/proton/tree/develop/examples) folder.
 
-To access more features, such as sources, sinks, dashboards, alerts, and data lineage, try [Timeplus Enterprise](https://www.timeplus.com/product) locally or create a workspace on [Timeplus Cloud](https://us-west-2.timeplus.cloud).
+To access more features, such as sources, sinks, dashboards, alerts, and data lineage, try [Timeplus Enterprise](https://www.timeplus.com/product) locally.
 
 What features are available with Timeplus Proton versus Timeplus Enterprise?
 
 |                               | **Timeplus Proton**                                                                                                                                                                    | **Timeplus Enterprise**                                                                                                                                                                                                          |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Deployment**                | <ul><li>Single-node Docker image</li><li>Single binary on Mac/Linux</li></ul>                                                                                                          | <ul><li>Single node, or</li><li>Cluster</li><li>Kubernetes-based self-hosting, or</li><li>Fully-managed cloud service</li></ul>                                                                               |
+| **Deployment**                | <ul><li>Single-node Docker image</li><li>Single binary on Mac/Linux</li></ul>                                                                                                          | <ul><li>Single node, or</li><li>Cluster</li><li>Kubernetes-based self-hosting</li></ul>                                                                               |
 | **Data sources**              | <ul><li>Random streams</li><li>External streams to Apache Kafka, Confluent Cloud, Redpanda</li><li>Streaming ingestion via REST API (compact mode only)</li></ul> | <ul><li>Everything in Timeplus Proton</li><li>External streams to another Timeplus Proton or Timeplus Enterprise deployment</li><li>WebSocket and HTTP Stream</li><li>NATS</li><li>CSV upload</li><li>Streaming ingestion via REST API (with API key and flexible modes)</li><li>Hundreds of connectors from Redpanda Connect</li></ul> |
 | **Data destinations (sinks)** | <ul><li>External streams to Apache Kafka, Confluent Cloud, Redpanda</li></ul>                                                                                                          | <ul><li>Everything in Timeplus Proton</li><li>External streams to another Timeplus Proton or Timeplus Enterprise deployment</li><li>Slack</li><li>Webhook</li><li>Hundreds of connectors from Redpanda Connect</li></ul>                                                                                                      |
 | **Support**                   | <ul><li>Community support from GitHub and Slack</li></ul>                                                                                                                              | <ul><li>Enterprise support via email, Slack, and Zoom, with a SLA</li></ul>                                                                                                                                                      |
