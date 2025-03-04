@@ -417,8 +417,8 @@ dbms_target_link_libraries (
         boost::circular_buffer
         boost::heap)
 
-target_include_directories(clickhouse_common_io PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Core/include") # uses some includes from core
-dbms_target_include_directories(PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Core/include")
+#target_include_directories(clickhouse_common_io PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Core/include") # uses some includes from core
+#dbms_target_include_directories(PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Core/include")
 
 target_link_libraries(clickhouse_common_io PUBLIC
     ch_contrib::miniselect
@@ -562,6 +562,7 @@ if (ENABLE_TESTS)
     target_link_libraries(unit_tests_dbms PRIVATE
         ch_contrib::gtest_all
         clickhouse_functions
+        clickhouse_table_functions
         clickhouse_aggregate_functions
         clickhouse_parsers
         clickhouse_storages_system
@@ -575,7 +576,7 @@ if (ENABLE_TESTS)
     endif()
 
     if(TARGET ch_contrib::rapidjson)
-        target_include_directories(unit_tests_dbms PRIVATE ch_contrib::rapidjson)
+        target_link_libraries(unit_tests_dbms PRIVATE ch_contrib::rapidjson)
     endif()
 
     if (TARGET ch_contrib::yaml_cpp)
