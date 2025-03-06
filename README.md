@@ -22,15 +22,15 @@
   <a href="#-whats-next"><strong>What's Next</strong></a> ·
   <a href="#-integrations"><strong>Integrations</strong></a> ·
   <a href="#contributing"><strong>Contributing</strong></a> ·
-  <a href="#need-help"><strong>Need help?</strong></a> 
-  
+  <a href="#need-help"><strong>Need help?</strong></a>
+
 </p>
 
 Timeplus Proton is a stream processing engine and database. It is a fast and lightweight alternative to ksqlDB or Apache Flink, 🚀 powered by the libraries and engines in ClickHouse. It enables developers to solve streaming data processing, multi-stream JOINs, sophisticated incremental materialized views, routing and analytics challenges from Apache Kafka, Redpanda and more sources, and send aggregated data to the downstream streaming or database systems. Timeplus Proton is the core engine of [Timeplus Enterprise](https://timeplus.com).
 
 ## 💪 Why use Timeplus Proton?
 
-1. **[Apache Flink](https://github.com/apache/flink) or [ksqlDB](https://github.com/confluentinc/ksql) alternative.** Timeplus Proton provides powerful stream processing functionalities, such as streaming ETL, tumble/hop/session windows, watermarks, incremental materialized views maintenance, CDC and data revision processing. In contrast to pure stream processors, it also stores queryable analytical/row based materialized views within Proton itself for use in analytics dashboards and applications. 
+1. **[Apache Flink](https://github.com/apache/flink) or [ksqlDB](https://github.com/confluentinc/ksql) alternative.** Timeplus Proton provides powerful stream processing functionalities, such as streaming ETL, tumble/hop/session windows, watermarks, incremental materialized views maintenance, CDC and data revision processing. In contrast to pure stream processors, it also stores queryable analytical/row based materialized views within Proton itself for use in analytics dashboards and applications.
 2. **Fast.** Timeplus Proton is written in C++, with optimized performance through SIMD. [For example](https://www.timeplus.com/post/scary-fast), on an Apple MacBookPro with M2 Max, Timeplus Proton can deliver 90 million EPS, 4 millisecond end-to-end latency, and high cardinality aggregation with 1 million unique keys.
 3. **Lightweight.** Timeplus Proton is a single binary (\<500MB). No JVM or any other dependencies. You can also run it with Docker, or on an AWS t2.nano instance (1 vCPU and 0.5 GiB memory).
 4. **Powered by the fast, resource efficient and mature [ClickHouse](https://github.com/clickhouse/clickhouse).** Timeplus Proton extends the historical data, storage, and computing functionality of ClickHouse with stream processing. Thousands of SQL functions are available in Timeplus Proton. Billions of rows are queried in milliseconds.
@@ -41,7 +41,7 @@ See our [architecture](https://docs.timeplus.com/proton-architecture) doc for te
 
 ## How is it different from ClickHouse?
 
-ClickHouse is an extremely performant Data Warehouse built for fast analytical queries on large amounts of data. While it does support ingesting data from streaming sources such as Apache Kafka, it is itself not a stream processing engine which can transform and join streaming event data based on time-based semantics to detect patterns that need to be acted upon as soon as it happens. ClickHouse also has incremental materialized view capability but is limited to creating materialized view off of ingestion of blocks to a single table. Proton uses ClickHouse as a table store engine inside of each stream (alongside a Write Ahead Log and other data structures) and uses to unify real-time and historical data together to detect signals in the data. In addition, Proton can act as an advanced data pre-processor for ClickHouse (and similar systems) where the bulk of the data preparation and batching is done ahead of ingestion. See [Timeplus and ClickHouse](https://www.timeplus.com/timeplus-and-clickhouse) for more details on this. 
+ClickHouse is an extremely performant Data Warehouse built for fast analytical queries on large amounts of data. While it does support ingesting data from streaming sources such as Apache Kafka, it is itself not a stream processing engine which can transform and join streaming event data based on time-based semantics to detect patterns that need to be acted upon as soon as it happens. ClickHouse also has incremental materialized view capability but is limited to creating materialized view off of ingestion of blocks to a single table. Proton uses ClickHouse as a table store engine inside of each stream (alongside a Write Ahead Log and other data structures) and uses to unify real-time and historical data together to detect signals in the data. In addition, Proton can act as an advanced data pre-processor for ClickHouse (and similar systems) where the bulk of the data preparation and batching is done ahead of ingestion. See [Timeplus and ClickHouse](https://www.timeplus.com/timeplus-and-clickhouse) for more details on this.
 
 ## 🎬 Demo Video
 
@@ -56,11 +56,7 @@ https://github.com/timeplus-io/proton/assets/5076438/8ceca355-d992-4798-b861-1e0
 ```shell
 curl https://install.timeplus.com/oss | sh
 ```
-Once the `proton` binary is available, you can run Timeplus Proton in different modes:
-
-- **Local Mode.** You run `proton local` to start it for fast processing on local and remote files using SQL without having to install a full server
-- **Config-less Mode.** You run `proton server` to start the server and put the config/logs/data in the current folder `proton-data`. Then use `proton client` in the other terminal to start the SQL client.
-- **Server Mode.** You run `sudo proton install` to install the server in predefined path and a default configuration file. Then you can run `sudo proton server -C /etc/proton-server/config.yaml` to start the server and use `proton client` in the other terminal to start the SQL client.
+Once the `proton` binary is available, you can run `proton server` to start the server and put the config/logs/data in the current folder `proton-data`. Then use `proton client` in the other terminal to start the SQL client.
 
 For Mac users, you can also use [Homebrew](https://brew.sh/) to manage the install/upgrade/uninstall:
 
@@ -92,7 +88,37 @@ SQL is the main interface. You can start a new terminal window with `proton clie
 
 In the `proton client`, you can write SQL to create [External Stream for Kafka](https://docs.timeplus.com/proton-kafka) or [External Table for ClickHouse](https://docs.timeplus.com/proton-clickhouse-external-table).
 
-You can also run the following SQL to create a stream of random data:
+For example, you can read from AWS MSK and write the data to ClickHouse for the following SQL:
+
+```sql
+-- Read from AWS MSK using IAM Role
+CREATE EXTERNAL STREAM aws_msk_stream (
+  device string,
+  temperature float
+)
+SETTINGS
+    type='kafka',
+    brokers='prefix.kafka.us-west-2.amazonaws.com:9098',
+    topic='topic',
+    security_protocol='SASL_SSL',
+    sasl_mechanism='AWS_MSK_IAM';
+
+-- Write to ClickHouse
+CREATE EXTERNAL TABLE ch_aiven
+SETTINGS type='clickhouse',
+            address='abc.aivencloud.com:28851',
+            user='avnadmin',
+            password='..',
+            secure=true,
+            table='events';
+
+-- Setup a long-running materialized view to write aggregated data to ClickHouse
+CREATE MATERIALIZED VIEW mv_msk2ch INTO ch_aiven AS
+SELECT window_start as timestamp, device, avg(temperature) as avg_temperature
+FROM tumble(aws_msk_stream, 10s) GROUP BY window_start, device;
+```
+
+If you don't have immediate access to Kafka or ClickHouse, you can also run the following SQL to generate random data:
 
 ```sql
 -- Create a stream with random data
@@ -126,8 +152,8 @@ What features are available with Timeplus Proton versus Timeplus Enterprise?
 |                               | **Timeplus Proton**                                                                                                                                                                    | **Timeplus Enterprise**                                                                                                                                                                                                          |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Deployment**                | <ul><li>Single-node Docker image</li><li>Single binary on Mac/Linux</li></ul>                                                                                                          | <ul><li>Single node, or</li><li>Cluster</li><li>Kubernetes-based self-hosting</li></ul>                                                                               |
-| **Data sources**              | <ul><li>Random streams</li><li>External streams to Apache Kafka, Confluent Cloud, Redpanda</li><li>Streaming ingestion via REST API (compact mode only)</li></ul> | <ul><li>Everything in Timeplus Proton</li><li>External streams to another Timeplus Proton or Timeplus Enterprise deployment</li><li>WebSocket and HTTP Stream</li><li>NATS</li><li>CSV upload</li><li>Streaming ingestion via REST API (with API key and flexible modes)</li><li>Hundreds of connectors from Redpanda Connect</li></ul> |
-| **Data destinations (sinks)** | <ul><li>External streams to Apache Kafka, Confluent Cloud, Redpanda</li></ul>                                                                                                          | <ul><li>Everything in Timeplus Proton</li><li>External streams to another Timeplus Proton or Timeplus Enterprise deployment</li><li>Slack</li><li>Webhook</li><li>Hundreds of connectors from Redpanda Connect</li></ul>                                                                                                      |
+| **Data sources**              | <ul><li>Random streams</li><li>External streams to Apache Kafka, Apache Pulsar, Confluent Cloud, Redpanda</li><li>External streams to another Timeplus Proton or Timeplus Enterprise deployment</li><li>External tables to ClickHouse</li><li>Streaming ingestion via REST API (compact mode only)</li></ul> | <ul><li>Everything in Timeplus Proton</li><li>WebSocket and HTTP Stream</li><li>NATS</li><li>CSV upload</li><li>Streaming ingestion via REST API (with API key and flexible modes)</li><li>Hundreds of connectors from Redpanda Connect</li></ul> |
+| **Data destinations (sinks)** | <ul><li>External streams to Apache Kafka, Apache Pulsar, Confluent Cloud, Redpanda</li><li>External streams to another Timeplus Proton or Timeplus Enterprise deployment</li><li>External tables to ClickHouse</li></ul>                                                                                                          | <ul><li>Everything in Timeplus Proton</li><li>Slack</li><li>Webhook</li><li>Hundreds of connectors from Redpanda Connect</li></ul>                                                                                                      |
 | **Support**                   | <ul><li>Community support from GitHub and Slack</li></ul>                                                                                                                              | <ul><li>Enterprise support via email, Slack, and Zoom, with a SLA</li></ul>                                                                                                                                                      |
 
 ## 🧩 Integrations
@@ -143,8 +169,6 @@ Integrations with other systems:
 * Docker and Testcontainers https://docs.timeplus.com/tutorial-testcontainers-java
 * Sling https://docs.timeplus.com/sling
 * Grafana https://github.com/timeplus-io/proton-grafana-source
-* Metabase  https://github.com/timeplus-io/metabase-proton-driver
-* Pulse UI https://github.com/timeplus-io/pulseui/tree/proton
 * Homebrew https://github.com/timeplus-io/homebrew-timeplus
 * dbt https://github.com/timeplus-io/dbt-proton
 
