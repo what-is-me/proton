@@ -15,7 +15,7 @@ on: # yamllint disable-line rule:truthy
         - memory
         - undefined
       arch:
-        descrition: 'Hardware architecture'
+        description: 'Hardware architecture'
         required: true
         default: x64
         type: choice
@@ -55,7 +55,7 @@ jobs:
         rm cache${SANITIZER:+_}$SANITIZER${ARCH:+_}$ARCH.tar.gz
 
         # compiling
-        ./docker/packager/packager --package-type binary --docker-image-version clang-16 --sanitizer $SANITIZER --proton-build --enable-proton-local --cache ccache --ccache_dir $GITHUB_WORKSPACE/ccache --output-dir $GITHUB_WORKSPACE/output
+        ./docker/packager/packager --package-type binary --docker-image-version clang-19 --sanitizer $SANITIZER --proton-build --enable-proton-local --cache ccache --ccache_dir $GITHUB_WORKSPACE/ccache --output-dir $GITHUB_WORKSPACE/output
 
         # clear compiling footprint
         rm -rf $GITHUB_WORKSPACE/ccache
@@ -103,7 +103,7 @@ jobs:
         rm cache${ARCH:+_}$ARCH.tar.gz
 
         # compiling
-        ./docker/packager/packager --package-type binary --docker-image-version clang-16 --build-type release --proton-build --enable-proton-local --cache ccache --ccache_dir $GITHUB_WORKSPACE/ccache --output-dir $GITHUB_WORKSPACE/output
+        ./docker/packager/packager --package-type binary --docker-image-version clang-19 --build-type release --proton-build --enable-proton-local --cache ccache --ccache_dir $GITHUB_WORKSPACE/ccache --output-dir $GITHUB_WORKSPACE/output
         # release doesn't build unit_tests_dbms
         # clear compiling footprint
         rm -rf $GITHUB_WORKSPACE/ccache
@@ -232,9 +232,9 @@ jobs:
       - name: Create and Configure Build
         run: |
           mkdir -p ${{ env.build_directory }}
-          export CC=$(brew --prefix llvm@17)/bin/clang
-          export CXX=$(brew --prefix llvm@17)/bin/clang++
-          export PATH=$(brew --prefix llvm@17)/bin:$PATH
+          export CC=$(brew --prefix llvm@19)/bin/clang
+          export CXX=$(brew --prefix llvm@19)/bin/clang++
+          export PATH=$(brew --prefix llvm@19)/bin:$PATH
           cmake -B ${{ env.build_directory }} -G "Ninja" -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DENABLE_TESTS=OFF -DENABLE_UTILS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_PULSAR=OFF
 
       - name: Build with Ninja
@@ -247,7 +247,7 @@ jobs:
           ORIGINAL_BINARY=${{ env.build_directory }}/programs/proton
           STRIPPED_BINARY=${{ env.build_directory }}/programs/proton_${COMMIT_HASH}_${ARCH}
           ls -lh $ORIGINAL_BINARY
-          /opt/homebrew/opt/llvm@17/bin/llvm-strip $ORIGINAL_BINARY
+          /opt/homebrew/opt/llvm@19/bin/llvm-strip $ORIGINAL_BINARY
           mv $ORIGINAL_BINARY $STRIPPED_BINARY
           ls -lh $STRIPPED_BINARY
 
